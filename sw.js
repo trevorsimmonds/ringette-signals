@@ -1,5 +1,5 @@
 // Ringette Signals service worker: caches the whole app so it opens offline at the rink.
-const CACHE = 'ringette-signals-v8';
+const CACHE = 'ringette-signals-v10';
 const SHELL = [
   './',
   'index.html',
@@ -7,6 +7,7 @@ const SHELL = [
   'app.js',
   'rig.js',
   'signals.js',
+  'rules.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',

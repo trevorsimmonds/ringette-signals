@@ -1,7 +1,7 @@
 (function () {
   const PDF = 'https://www.ringette.ca/wp-content/uploads/2025/09/Final-Draft-Official-Rules-and-Case-Book-2025-2027-English-5.5x8.5-sm-1.pdf';
   // PDF page = printed page + offset (front matter). null = open the PDF without a page jump.
-  const PAGE_OFFSET = null;
+  const PAGE_OFFSET = 5;
   const ANNEX_C_PAGE = 197;
   const NS = 'http://www.w3.org/2000/svg';
   const $ = (id) => document.getElementById(id);
@@ -55,7 +55,7 @@
     const el = document.createElement('button');
     el.className = 'sig';
     el.dataset.id = cs.id;
-    const ref = cs.rule ? `Rule ${cs.rule.ref}` : 'Annex C';
+    const ref = cs.rule ? (/^\d/.test(cs.rule.ref) ? `Rule ${cs.rule.ref}` : cs.rule.ref) : 'Annex C';
     el.innerHTML = `<span class="thumb"><svg role="img"></svg></span>
       <span class="meta"><span class="nm">${cs.name}</span><span class="rf ${cs.cat === 'penalty' ? 'pen' : ''}">${cs.cat === 'penalty' ? 'Penalty' : 'General'} · ${ref}</span></span>`;
     const p = makePlayer(el.querySelector('svg'), cs);
@@ -93,9 +93,9 @@
   function ruleLinks(cs) {
     const out = [];
     if (cs.rule) {
-      const where = cs.rule.approx ? `Section ${cs.rule.ref.split('.')[0]} starts p. ${cs.rule.page}` : `p. ${cs.rule.page}`;
-      out.push(`<a class="rule" href="${pdfLink(cs.rule.approx ? cs.rule.page : cs.rule.page)}" target="_blank" rel="noopener">
-        <span>Rule ${cs.rule.ref} · ${cs.rule.title}<small>Official Rules &amp; Case Book 2025–2027 · ${where}</small></span><span class="arr">↗</span></a>`);
+      const where = `p. ${cs.rule.page}`;
+      out.push(`<a class="rule" href="${pdfLink(cs.rule.page)}" target="_blank" rel="noopener">
+        <span>${/^\d/.test(cs.rule.ref) ? 'Rule ' : ''}${cs.rule.ref} · ${cs.rule.title}<small>Official Rules &amp; Case Book 2025–2027 · ${where}</small></span><span class="arr">↗</span></a>`);
     }
     out.push(`<a class="rule ${cs.rule ? 'sec' : ''}" href="${pdfLink(ANNEX_C_PAGE)}" target="_blank" rel="noopener">
       <span>Annex C · On-Ice Officials' Signals<small>How the signal is given · p. ${ANNEX_C_PAGE}</small></span><span class="arr">↗</span></a>`);
