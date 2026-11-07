@@ -152,7 +152,12 @@
 
   $('startBtn').addEventListener('click', () => openViewer(null));
   $('vClose').addEventListener('click', () => { viewer.hidden ? null : (history.state && history.state.viewer ? history.back() : closeViewer(true)); });
-  window.addEventListener('popstate', () => closeViewer(true));
+  window.addEventListener('popstate', () => {
+    // A new #signal link while the viewer is open is handled by hashchange; anything else is "back".
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (!viewer.hidden && h && h !== (list[idx] && list[idx].id) && sigs.some((s) => s.id === h)) return;
+    closeViewer(true);
+  });
   $('vPrev').addEventListener('click', () => show(idx - 1, -1));
   $('vNext').addEventListener('click', () => show(idx + 1, 1));
   $('vPlay').addEventListener('click', () => { vp.playing = !vp.playing; $('vPlay').textContent = vp.playing ? 'Pause' : 'Play'; });
