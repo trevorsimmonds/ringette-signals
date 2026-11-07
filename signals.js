@@ -34,7 +34,7 @@
 
   const sweepKeys = (other) => {
     const k = [[0, up(other ? other : null)], [0.05, up(other)]];
-    const fwd = FWD('flat', 1.35);
+    const fwd = { u: 84, f: -40, ul: 0.3, fl: 0.5, h: 'flat', hs: 1.3 };   // hand drawn in close at the chest
     const side = { u: 92, f: 0, h: 'flat' };
     for (let i = 0; i < 5; i++) {
       const t0 = 0.08 + i * 0.17;
@@ -45,11 +45,11 @@
     return k;
   };
   add({ id: 'five-second-count', name: 'Five-second count', cat: 'general', dur: 6,
-    how: 'One arm at shoulder height sweeps out to the side and back, palm down: one sweep for each second.',
+    how: 'One arm moves from the chest out to the side, once for each second, counting to five.',
     keys: sweepKeys(null) });
 
   add({ id: 'delayed-violation-five', name: 'Delayed violation with five-second count', cat: 'general', dur: 6,
-    how: 'One arm gives the delayed violation signal while the other arm gives the five-second count.',
+    how: 'One arm gives the delayed violation signal (forearm upright) while the other arm moves from the chest to the side, once for each second.',
     keys: sweepKeys({ u: 90, f: 90, h: 'palm' }) });
 
   add({ id: 'goal', name: 'Goal', cat: 'general', dur: 3,
@@ -60,12 +60,12 @@
     how: 'Both arms raised overhead, each angled about 45° out to the side, in line with the body. Play restarts with the ring given to the defending goaltender instead of a free pass.',
     keys: hold(up({ u: 140, f: 0, h: 'flat' }, { u: 140, f: 0, h: 'flat' })) });
 
+  const LT_APART = up({ ax: 104, ay: 124, h: 'fist' }, { ax: 136, ay: 124, h: 'fist' });
+  const LT_TOGETHER = up({ ax: 114, ay: 124, h: 'fist' }, { ax: 126, ay: 124, h: 'fist' });
   add({ id: 'bottom-third', name: 'Hand on lower third of stick', cat: 'general', dur: 3,
-    how: 'Both fists clenched at chest height, brought together thumb to thumb in front of the chest.',
+    how: 'Both fists clenched in front of the chest, brought together at the thumbs and apart again.',
     front: 'LR',
-    keys: [[0, up()], [0.06, up()], [0.28, up({ ax: 106, ay: 124, h: 'fist' }, { ax: 134, ay: 124, h: 'fist' })],
-      [0.42, up({ ax: 114, ay: 124, h: 'fist' }, { ax: 126, ay: 124, h: 'fist' })],
-      [0.8, up({ ax: 114, ay: 124, h: 'fist' }, { ax: 126, ay: 124, h: 'fist' })], [0.97, up()], [1, up()]] });
+    keys: [[0, up()], [0.06, up()], [0.26, LT_APART], [0.4, LT_TOGETHER], [0.56, LT_APART], [0.72, LT_TOGETHER], [0.84, LT_TOGETHER], [0.97, up()], [1, up()]] });
 
   // Timeout "T": flat hand across the top, the other hand upright under it, fingertips touching.
   const TEE = up({ ax: 108, ay: 118, ul: 0.8, fl: 0.55, bend: 'down', ha: -90, h: 'flat', hs: 1.3 },
@@ -179,16 +179,15 @@
 
   const ELB = { u: 145, f: -128, h: 'fist' };   // elbow raised high, forearm folded down
   P({ id: 'elbowing', name: 'Elbowing', dur: 3.2,
-    how: 'One elbow raised high with that forearm folded down; the other hand reaches across and taps the raised elbow.',
+    how: 'The other hand taps one raised elbow once.',
     front: 'LR',
-    keys: [[0, up()], [0.06, up()], [0.24, up(ELB, { ax: 92, ay: 108, h: 'flat' })], [0.34, up(ELB, { ax: 80, ay: 98, h: 'flat' })],
-      [0.44, up(ELB, { ax: 92, ay: 108, h: 'flat' })], [0.54, up(ELB, { ax: 80, ay: 98, h: 'flat' })],
-      [0.8, up(ELB, { ax: 80, ay: 98, h: 'flat' })], [0.98, up()], [1, up()]] });
+    keys: [[0, up()], [0.06, up()], [0.26, up(ELB, { ax: 94, ay: 110, h: 'flat' })], [0.4, up(ELB, { ax: 80, ay: 98, h: 'flat' })],
+      [0.52, up(ELB, { ax: 94, ay: 110, h: 'flat' })], [0.8, up(ELB, { ax: 94, ay: 110, h: 'flat' })], [0.98, up()], [1, up()]] });
 
-  const hs1 = up({ ax: 140, ay: 86, h: 'fist', bend: 'down' }, { u: 176, f: 0, h: 'fist' });
-  const hs2 = up({ ax: 140, ay: 80, h: 'fist', bend: 'down' }, { u: 172, f: -4, h: 'fist' });
+  const hs1 = up({ ax: 140, ay: 76, h: 'fist', bend: 'down' }, { ax: 140, ay: 62, h: 'fist', bend: 'down' });
+  const hs2 = up({ ax: 142, ay: 72, h: 'fist', bend: 'down' }, { ax: 142, ay: 58, h: 'fist', bend: 'down' });
   P({ id: 'high-sticking', name: 'High sticking', dur: 3,
-    how: 'Both fists raised as if holding a stick up high: one arm straight up with the fist above the head, the other fist beside that elbow.',
+    how: 'Both fists clenched, one immediately above the other, at forehead height (as if holding a stick up high).',
     front: 'LR',
     keys: [[0, up()], [0.06, up()], [0.16, up({ ax: 140, ay: 140, h: 'fist', bend: 'down' }, { ax: 134, ay: 120, h: 'fist' })], [0.28, hs1], [0.42, hs2], [0.56, hs1], [0.8, hs1],
       [0.88, up({ ax: 140, ay: 140, h: 'fist', bend: 'down' }, { ax: 134, ay: 120, h: 'fist' })], [0.98, up()], [1, up()]] });
@@ -260,10 +259,12 @@
     keys: [[0, up()], [0.05, up()], [0.18, T], [0.38, T], [0.5, up(null, FWD('fist', 1.7))],
       [0.8, up(null, FWD('fist', 1.7))], [0.97, up()], [1, up()]] });
 
+  const HIPS = up({ ax: 97, ay: 172, h: 'flat' }, { ax: 143, ay: 172, h: 'flat' });
   P({ id: 'misconduct-match', name: 'Misconduct / match penalty', dur: 3,
-    how: 'Both hands placed on the hips.',
+    how: 'Both hands placed on the hips, then an open hand points at the penalized player.',
     front: 'LR',
-    keys: hold(up({ ax: 97, ay: 172, h: 'flat' }, { ax: 143, ay: 172, h: 'flat' })) });
+    dur: 4, keys: [[0, up()], [0.05, up()], [0.2, HIPS], [0.5, HIPS], [0.62, up({ ax: 97, ay: 172, h: 'flat' }, { u: 80, f: 0, h: 'flat' })],
+      [0.86, up({ ax: 97, ay: 172, h: 'flat' }, { u: 80, f: 0, h: 'flat' })], [0.98, up()], [1, up()]] });
 
 
   // What each signal means, in plain language.

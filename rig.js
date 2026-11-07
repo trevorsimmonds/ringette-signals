@@ -68,10 +68,10 @@
           <path d="M101 74a19 19 0 0 1 38 0v2h-38z" fill="${INK}"/>
           <path d="M99 76h42l-2 4h-38z" fill="#2d2f36"/>
           <rect x="100" y="76" width="7" height="12" rx="3" fill="${INK}"/><rect x="133" y="76" width="7" height="12" rx="3" fill="${INK}"/>
-          <circle cx="113" cy="85" r="1.9" fill="#2a2a2a"/><circle cx="127" cy="85" r="1.9" fill="#2a2a2a"/>
+<g class="face">          <circle cx="113" cy="85" r="1.9" fill="#2a2a2a"/><circle cx="127" cy="85" r="1.9" fill="#2a2a2a"/>
           <path d="M110.6 83.6l-1.6-1.2M129.4 83.6l1.6-1.2" stroke="#2a2a2a" stroke-width="1.1" stroke-linecap="round"/>
           <circle cx="109.5" cy="89.5" r="2.6" fill="#f0a7a0" opacity=".45"/><circle cx="130.5" cy="89.5" r="2.6" fill="#f0a7a0" opacity=".45"/>
-          <path class="mouth" d="M116 91.5q4 3 8 0" stroke="#c0605a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path class="mouth" d="M116 91.5q4 3 8 0" stroke="#c0605a" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
         </g>
         <g class="armsFront"></g>
       </g>
@@ -92,7 +92,7 @@
     }
     return {
       svg, arms, bodyg: q('.bodyg'), legs: q('.legs'), skR: q('.skR'), skL: q('.skL'), torso: q('.torso'), head: q('.head'),
-      pony: q('.pony'), cap: q('.cap'), capText: q('.cap text'), capRect: q('.cap rect'), props: q('.props'),
+      pony: q('.pony'), face: q('.face'), cap: q('.cap'), capText: q('.cap text'), capRect: q('.cap rect'), props: q('.props'),
       back: q('.armsBack'), front: q('.armsFront'), capVal: null, ponyA: 0, ponyV: 0, lastU: null
     };
   }
@@ -137,7 +137,7 @@
   // Precompute a signal: resolve every key into numeric pose.
   function compile(sig) {
     const keys = sig.keys.map(([t, p]) => {
-      const body = { c: 0, toe: 0, bob: 0, ...(p.body || {}) };
+      const body = { c: 0, toe: 0, bob: 0, look: 0, ...(p.body || {}) };
       const dy = bodyDy(body).dy;
       const arm = (side) => {
         const a = p[side] || REST;
@@ -166,7 +166,7 @@
       ul: lerp(a[s].ul, b[s].ul, p), fl: lerp(a[s].fl, b[s].fl, p), hs: lerp(a[s].hs, b[s].hs, p),
       w: lerp(a[s].w, near(a[s].w, b[s].w), p), h: p < 0.35 ? a[s].h : b[s].h
     });
-    const body = {}; for (const key of ['c', 'toe', 'bob']) body[key] = lerp(a.body[key] || 0, b.body[key] || 0, p);
+    const body = {}; for (const key of ['c', 'toe', 'bob', 'look']) body[key] = lerp(a.body[key] || 0, b.body[key] || 0, p);
     return { L: arm('L'), R: arm('R'), body, cap: a.cap, prop: a.prop };
   }
 
@@ -174,9 +174,11 @@
     const { ls, ts, Hn, dy } = bodyDy(pose.body);
     r.legs.setAttribute('transform', `translate(0 ${252 * (1 - ls)}) scale(1 ${ls})`);
     r.torso.setAttribute('transform', `translate(0 ${Hn}) scale(1 ${ts}) translate(0 -186)`);
-    r.head.setAttribute('transform', `translate(0 ${dy + pose.body.c * 6})`);
     r.bodyg.setAttribute('transform', `translate(0 ${-pose.body.bob})`);
     r.skR.setAttribute('transform', `rotate(${-pose.body.toe} 124 268)`);
+    const lk = pose.body.look || 0;
+    r.face.setAttribute('transform', `translate(${lk * 6} 0)`);
+    r.head.setAttribute('transform', `translate(0 ${dy + pose.body.c * 6}) rotate(${lk * 6} 120 90)`);
     for (const side of ['L', 'R']) {
       const a = pose[side], m = r.arms[side], sg = side === 'L' ? 1 : -1;
       const [sx, sy] = SH[side];

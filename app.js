@@ -73,6 +73,17 @@
   let cat = 'all', query = '';
   const visible = () => sigs.filter((s) => (cat === 'all' || s.cat === cat) && (s.name + ' ' + s.means).toLowerCase().includes(query));
   function filter() {
+    const rules = cat === 'rules';
+    grid.hidden = rules; $('rulesList').hidden = !rules;
+    if (rules) {
+      let m = 0;
+      for (const r of ruleEls) { const show = !query || r.card.search.includes(query); r.el.hidden = !show; if (show) m++; }
+      for (const s of secEls) s.hidden = !ruleEls.some((r) => r.card.kind === s.dataset.kind && !r.el.hidden);
+      $('empty').hidden = m > 0;
+      $('empty').textContent = 'No rules match that search.';
+      return;
+    }
+    $('empty').textContent = 'No signals match that search.';
     let n = 0;
     for (const c of cards) {
       const show = (cat === 'all' || c.cs.cat === cat) && (c.cs.name + ' ' + c.cs.means).toLowerCase().includes(query);
@@ -82,9 +93,34 @@
   }
   document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', x === b));
-    cat = b.dataset.cat; filter();
+    cat = b.dataset.cat;
+    $('search').placeholder = cat === 'rules' ? 'Search rules and situations' : 'Search signals';
+    filter();
   }));
   $('search').addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); filter(); });
+
+  // ---------- rules list ----------
+  const RC = window.RULE_CARDS || [];
+  const ruleEls = [], secEls = [];
+  const SECTIONS = [
+    ['basic', 'Basics', 'New to ringette? Start here.'],
+    ['situation', 'Situations', 'The things you don\'t see every game.'],
+    ['ontario', 'Ringette Ontario extras', 'Only at Ringette Ontario sanctioned events, like tournaments and provincials. Your league may set its own rules.']
+  ];
+  for (const [kind, label, note] of SECTIONS) {
+    const sec = document.createElement('div');
+    sec.dataset.kind = kind;
+    sec.innerHTML = `<h2 class="rsec">${label}</h2><p class="rsec-note">${note}</p>`;
+    $('rulesList').appendChild(sec); secEls.push(sec);
+    for (const card of RC.filter((c) => c.kind === kind)) {
+      const el = document.createElement('button');
+      el.className = 'rcard' + (kind === 'ontario' ? ' ontario' : '');
+      el.innerHTML = `<span class="t">${card.title}${kind === 'ontario' ? '<span class="badge-on">ONTARIO</span>' : ''}</span><span class="s">${card.short}</span>`;
+      el.addEventListener('click', () => openRule(card.id));
+      sec.appendChild(el); ruleEls.push({ el, card });
+    }
+  }
+  $('nRules').textContent = RC.length;
 
   // ---------- one at a time ----------
   const viewer = $('viewer');
@@ -115,6 +151,8 @@
     $('vMeans').textContent = cs.means;
     $('vHow').textContent = cs.how;
     $('vRules').innerHTML = ruleLinks(cs);
+    const learn = RC.filter((r) => r.signals.includes(cs.id));
+    $('vLearn').innerHTML = learn.map((r) => `<button class="sigchip" data-rule="${r.id}">${r.title}</button>`).join('');
     const st = $('vStage');
     st.classList.remove('slide-l', 'slide-r'); void st.offsetWidth;
     if (dir) st.classList.add(dir > 0 ? 'slide-l' : 'slide-r');
@@ -150,13 +188,81 @@
     if (!fromPop && history.state && history.state.viewer) history.back();
   }
 
-  $('startBtn').addEventListener('click', () => openViewer(null));
+  $('startBtn').addEventListener('click', () => {
+    if (cat === 'rules') { const first = ruleEls.find((r) => !r.el.hidden); if (first) openRule(first.card.id); }
+    else openViewer(null);
+  });
+  $('vLearn').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-rule]'); if (!b) return;
+    viewer.hidden = true; if (vp) players.delete(vp);
+    openRule(b.dataset.rule, true);
+  });
+
+  // ---------- rule cards, one at a time ----------
+  const rviewer = $('rviewer');
+  let rlist = RC, ridx = 0;
+  const RO_LINK = window.RO_PDF;
+  function ruleLink(r) {
+    if (r.ro) return `<a class="rule" href="${RO_LINK}" target="_blank" rel="noopener"><span>Ringette Ontario ${r.ref} · ${r.title}<small>Competition Playing Rules, August 2025</small></span><span class="arr">↗</span></a>`;
+    const label = /^\d/.test(r.ref) ? `Rule ${r.ref}` : r.ref;
+    return `<a class="rule" href="${pdfLink(r.page)}" target="_blank" rel="noopener"><span>${label} · ${r.title}<small>Official Rules &amp; Case Book 2025–2027 · p. ${r.page}</small></span><span class="arr">↗</span></a>`;
+  }
+  function showRule(i) {
+    ridx = (i + rlist.length) % rlist.length;
+    const c = rlist[ridx];
+    $('rCount').textContent = `${ridx + 1} / ${rlist.length}`;
+    $('rKind').textContent = c.kind === 'basic' ? 'Basics' : c.kind === 'situation' ? 'Situation' : 'Ringette Ontario';
+    $('rTitle').textContent = c.title;
+    $('rShort').textContent = c.short;
+    $('rText').innerHTML = c.body.map((t) => `<li>${t}</li>`).join('');
+    const d = c.diagram && window.RULE_DIAGRAMS[c.diagram];
+    $('rDiagram').innerHTML = d ? `${d.svg}<p class="cap">${d.caption}</p>${d.legend.length ? `<div class="legend">${d.legend.map(([k, t]) => `<span><i class="dot ${k}"></i>${t}</span>`).join('')}</div>` : ''}` : '';
+    $('rOntarioNote').hidden = c.kind !== 'ontario';
+    $('rRules').innerHTML = c.rules.map(ruleLink).join('');
+    const sg = c.signals.map((id) => sigs.find((s) => s.id === id)).filter(Boolean);
+    $('rSignals').innerHTML = sg.map((s) => `<button class="sigchip" data-sig="${s.id}">${s.name}</button>`).join('');
+    $('rSigH').hidden = !sg.length;
+    $('rBody').scrollTop = 0; rviewer.scrollTop = 0;
+    history.replaceState(history.state, '', `#rule-${c.id}`);
+  }
+  function openRule(id, keepState) {
+    rlist = cat === 'rules' && !keepState ? ruleEls.filter((r) => !r.el.hidden).map((r) => r.card) : RC;
+    if (!rlist.some((r) => r.id === id)) rlist = RC;
+    rviewer.hidden = false;
+    document.body.style.overflow = 'hidden';
+    for (const c of cards) players.delete(c.p);
+    if (!history.state || !history.state.viewer) history.pushState({ viewer: true }, '', location.href);
+    showRule(rlist.findIndex((r) => r.id === id));
+    $('rClose').focus();
+  }
+  function closeRule() {
+    if (rviewer.hidden) return;
+    rviewer.hidden = true;
+    document.body.style.overflow = '';
+    if (io) cards.forEach((c) => { io.unobserve(c.el); io.observe(c.el); });
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  $('rClose').addEventListener('click', () => (history.state && history.state.viewer ? history.back() : closeRule()));
+  $('rPrev').addEventListener('click', () => showRule(ridx - 1));
+  $('rNext').addEventListener('click', () => showRule(ridx + 1));
+  $('rSignals').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sig]'); if (!b) return;
+    rviewer.hidden = true;
+    openViewer(b.dataset.sig);
+  });
+  let rsx = 0, rsy = 0;
+  rviewer.addEventListener('touchstart', (e) => { rsx = e.touches[0].clientX; rsy = e.touches[0].clientY; }, { passive: true });
+  rviewer.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - rsx, dy = e.changedTouches[0].clientY - rsy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) showRule(ridx + (dx < 0 ? 1 : -1));
+  }, { passive: true });
   $('vClose').addEventListener('click', () => { viewer.hidden ? null : (history.state && history.state.viewer ? history.back() : closeViewer(true)); });
   window.addEventListener('popstate', () => {
     // A new #signal link while the viewer is open is handled by hashchange; anything else is "back".
     const h = decodeURIComponent(location.hash.slice(1));
     if (!viewer.hidden && h && h !== (list[idx] && list[idx].id) && sigs.some((s) => s.id === h)) return;
-    closeViewer(true);
+    if (!rviewer.hidden && h.startsWith('rule-') && h.slice(5) !== (rlist[ridx] && rlist[ridx].id)) return;
+    closeViewer(true); closeRule();
   });
   $('vPrev').addEventListener('click', () => show(idx - 1, -1));
   $('vNext').addEventListener('click', () => show(idx + 1, 1));
@@ -173,6 +279,10 @@
   });
   $('vReveal').addEventListener('click', () => { revealed = true; applyQuiz(); });
   document.addEventListener('keydown', (e) => {
+    if (!rviewer.hidden) {
+      if (e.key === 'ArrowRight') showRule(ridx + 1); else if (e.key === 'ArrowLeft') showRule(ridx - 1); else if (e.key === 'Escape') $('rClose').click();
+      return;
+    }
     if (viewer.hidden) return;
     if (e.key === 'ArrowRight') show(idx + 1, 1);
     else if (e.key === 'ArrowLeft') show(idx - 1, -1);
@@ -192,8 +302,13 @@
   // deep link: #signal-id opens it
   const hash = decodeURIComponent(location.hash.slice(1));
   if (hash && sigs.some((s) => s.id === hash)) openViewer(hash);
+  else if (hash.startsWith('rule-') && RC.some((r) => r.id === hash.slice(5))) openRule(hash.slice(5), true);
   window.addEventListener('hashchange', () => {
     const h = decodeURIComponent(location.hash.slice(1));
+    if (h.startsWith('rule-') && RC.some((r) => r.id === h.slice(5))) {
+      if (rviewer.hidden) openRule(h.slice(5), true); else showRule(rlist.findIndex((r) => r.id === h.slice(5)));
+      return;
+    }
     if (h && sigs.some((s) => s.id === h)) { if (viewer.hidden) openViewer(h); else show(list.findIndex((s) => s.id === h), 0); }
   });
 

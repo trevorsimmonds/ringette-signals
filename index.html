@@ -29,11 +29,13 @@
     <button role="tab" data-cat="all" aria-selected="true">All <span class="pill" id="nAll"></span></button>
     <button role="tab" data-cat="general" aria-selected="false">General <span class="pill" id="nGen"></span></button>
     <button role="tab" data-cat="penalty" aria-selected="false">Penalties <span class="pill" id="nPen"></span></button>
+    <button role="tab" data-cat="rules" aria-selected="false">Rules <span class="pill" id="nRules"></span></button>
   </nav>
 
   <main>
     <input id="search" class="search" type="search" placeholder="Search signals" autocomplete="off" aria-label="Search signals">
     <div id="grid" class="grid"></div>
+    <div id="rulesList" class="rules-list" hidden></div>
     <p id="empty" class="empty" hidden>No signals match that search.</p>
     <p class="muted small foot">Signals from Ringette Canada's <a id="bookLink" target="_blank" rel="noopener">Official Rules &amp; Case Book 2025–2027</a>, Annex C. Illustrations are unofficial.</p>
   </main>
@@ -65,13 +67,39 @@
           <button id="vPlay">Pause</button>
           <button id="vSlow" class="sec">Slow motion</button>
         </div>
+        <div id="vLearn" class="learn"></div>
         <p class="muted small swipe">Swipe or use ‹ › to move between signals.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="rviewer" class="viewer" hidden aria-modal="true" role="dialog" aria-labelledby="rTitle">
+    <header class="topbar vbar">
+      <button id="rClose" class="icon-btn" aria-label="Back to rules">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+      </button>
+      <span id="rCount" class="vcount"></span>
+      <span class="rnav"><button id="rPrev" class="icon-btn" aria-label="Previous card">‹</button><button id="rNext" class="icon-btn" aria-label="Next card">›</button></span>
+    </header>
+    <div class="vbody rbody" id="rBody">
+      <div id="rDiagram" class="diagram"></div>
+      <div class="vinfo">
+        <span id="rKind" class="chip"></span>
+        <h2 id="rTitle"></h2>
+        <div class="means"><h3>Short answer</h3><p id="rShort"></p></div>
+        <ul id="rText" class="rtext"></ul>
+        <div id="rOntarioNote" class="ro-note" hidden>Ringette Ontario rule: applies at Ringette Ontario sanctioned events, like tournaments and provincial championships. Your league (NCRRL, for example) may set its own rules.</div>
+        <h3 class="howh">In the rulebook</h3>
+        <div id="rRules" class="rules"></div>
+        <h3 class="howh" id="rSigH">Related signals</h3>
+        <div id="rSignals" class="sigchips"></div>
       </div>
     </div>
   </div>
 
   <script src="rig.js"></script>
   <script src="signals.js"></script>
+  <script src="rules.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
