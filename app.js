@@ -266,8 +266,11 @@
   window.addEventListener('popstate', () => {
     // A new #signal link while the viewer is open is handled by hashchange; anything else is "back".
     const h = decodeURIComponent(location.hash.slice(1));
-    if (!viewer.hidden && h && h !== (list[idx] && list[idx].id) && sigs.some((s) => s.id === h)) return;
-    if (!rviewer.hidden && h.startsWith('rule-') && h.slice(5) !== (rlist[ridx] && rlist[ridx].id)) return;
+    const curSig = !viewer.hidden && list[idx] ? list[idx].id : null;
+    const curRule = !rviewer.hidden && rlist[ridx] ? 'rule-' + rlist[ridx].id : null;
+    const isSig = sigs.some((s) => s.id === h), isRule = h.startsWith('rule-') && RC.some((r) => r.id === h.slice(5));
+    // A link to a different signal or card while one is open: hashchange takes it from here.
+    if ((curSig || curRule) && (isSig || isRule) && h !== curSig && h !== curRule) return;
     closeViewer(true); closeRule();
   });
   $('vPrev').addEventListener('click', () => show(idx - 1, -1));
@@ -312,9 +315,11 @@
   window.addEventListener('hashchange', () => {
     const h = decodeURIComponent(location.hash.slice(1));
     if (h.startsWith('rule-') && RC.some((r) => r.id === h.slice(5))) {
+      if (!viewer.hidden) { viewer.hidden = true; if (vp) players.delete(vp); }
       if (rviewer.hidden) openRule(h.slice(5), true); else showRule(rlist.findIndex((r) => r.id === h.slice(5)));
       return;
     }
+    if (!rviewer.hidden && sigs.some((s) => s.id === h)) { rviewer.hidden = true; openViewer(h); return; }
     if (h && sigs.some((s) => s.id === h)) { if (viewer.hidden) openViewer(h); else show(list.findIndex((s) => s.id === h), 0); }
   });
 

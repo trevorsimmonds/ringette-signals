@@ -292,7 +292,7 @@
     'body-contact': 'A player checked an opponent with the body in a forceful way. Ringette has no body checking. 2-minute minor.',
     'charging': 'The ring carrier skated straight into an opponent who was already in a legal defending position. 2-minute minor.',
     'cross-checking': 'A player checked an opponent with the stick held in both hands in front of the body. 2-minute minor.',
-    'delay-of-game': 'A player held up the game, for example by holding or shooting the ring out of play, deliberately going into the crease, playing with a broken stick, or stalling. 2-minute minor.',
+    'delay-of-game': 'A player held up the game, for example by holding or shooting the ring out of play, deliberately going into the crease, playing with a broken stick, or stalling. It\'s also the penalty for a "4 in" by the team without the ring when one of its skaters gets involved in the play while there are too many in the restricted area (see the "Too many in the zone" card). 2-minute minor.',
     'elbowing': 'A player hit an opponent with the elbow. 2-minute minor.',
     'high-sticking': 'A player raised the playing end of the stick above shoulder height near another player, even by accident. 2-minute minor.',
     'holding': 'A player held an opponent with the hand, or pinned the ring carrier\'s stick so they couldn\'t pass or shoot. 2-minute minor.',

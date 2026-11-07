@@ -35,7 +35,7 @@
         'The free play line is the thin red line across the top of the end-zone circles. The area behind it, out to the end boards, is the restricted area.',
         'Each team can have at most three skaters in each restricted area. Goalies don\'t count.',
         'Players can swap at the line: the one leaving has to have both skates on the line first.',
-        'If the team with the ring has too many in there, play stops and it loses the ring. If the other team has an extra player who gets involved in the play, that\'s a delay of game penalty.'
+        'Too many in? If it\'s the team with the ring, play stops and it loses the ring. If it\'s the team without the ring, it\'s a delayed violation, and it becomes a delay of game penalty if one of its skaters gets involved in the play. See "Too many in the zone: violation or delay of game?"'
       ],
       rules: [R('8.6', 'Free Play Line', 42)], signals: ['too-many-skaters', 'line-violation'], diagram: 'even' },
 
@@ -151,6 +151,25 @@
         'With only one penalty, the normal limit of three applies.'
       ],
       rules: [R('8.6.d', 'Free Play Line (two penalties)', 42)], signals: ['too-many-skaters'], diagram: 'twopen' },
+
+    { id: 'four-in', kind: 'situation', title: 'Too many in the zone: violation or delay of game?',
+      short: 'It depends who has the ring. The team with the ring just loses it. The team without the ring gets a delay of game penalty only if someone gets involved in the play while they have too many in.',
+      body: [
+        '<b>Team WITH the ring puts a 4th skater past the free play line:</b> play stops right away and the other team gets the ring. That\'s a violation, never a penalty, because play stops before anyone can get involved.',
+        '<b>Team WITHOUT the ring puts a 4th skater in:</b> the ref signals a delayed violation the moment she crosses the line.',
+        '<b>It becomes a delay of game penalty</b> if any skater on that team (not just the extra one) gets involved in the play inside the restricted area while there are still too many in. "Involved" includes checking or even <i>trying</i> to check the ring carrier, closely guarding a player to stop a pass, or gaining control of the ring.',
+        '<b>Only one penalty:</b> it goes to the extra skater, however many teammates get involved. If she also trips someone, she gets both penalties.',
+        '<b>If nobody gets involved,</b> it stays a violation. Play stops only if that team gains control of the ring before it leaves the zone, and within five seconds of the extra skaters getting out. If the ring leaves the zone, the violation is wiped out.',
+        '<b>The goalie doesn\'t count:</b> if she makes a save and gains control while there are too many in, play stops for the violation, not a penalty.',
+        '<b>Swapping at the line</b> is legal only once both skates of the player leaving touch the line. Stepping in a moment too early is a common way this happens.',
+        '<b>Two players in the box?</b> The short team\'s third skater going into its own restricted area is treated exactly the same way.',
+        '<b>Reaching over the line:</b> a player who can\'t go in (her team already has three inside) who reaches over to grab the ring, or knock it out, to stop play on purpose also gets delay of game.',
+        '<b>Last two minutes and overtime:</b> an extra defender who <i>deliberately</i> goes in, or stays in, and gets involved gives up a penalty shot.',
+        '<b>When 4 are allowed:</b> for the fouled team while a delayed penalty is signalled, and for a team that has pulled its goalie, but only once the goalie is actually off the ice.'
+      ],
+      rules: [R('8.6.g', 'Too many: team in control', 42), R('8.6.h', 'Too many: team not in control', 43), R('14.5.d', 'Delay of Game (too many skaters)', 111),
+        R('14.5.v', 'Delay of Game (reaching over the line)', 114), R('8.6.e', 'Exchanging at the line', 42), R('19.4', 'Penalty shot: last two minutes', 144)],
+      signals: ['too-many-skaters', 'delayed-violation', 'delay-of-game', 'delayed-penalty'], diagram: 'even' },
 
     { id: 'goal-cancels', kind: 'situation', title: 'When does a goal end a penalty?',
       short: 'Only when the team scored on has more players penalized than the team that scored.',
@@ -429,7 +448,7 @@
     }
   };
 
-  CARDS.forEach((c) => { c.search = (c.title + ' ' + c.short + ' ' + c.body.join(' ')).toLowerCase(); });
+  CARDS.forEach((c) => { c.search = (c.title + ' ' + c.short + ' ' + c.body.join(' ')).replace(/<[^>]+>/g, '').toLowerCase(); });
   window.RULE_CARDS = CARDS;
   window.RULE_DIAGRAMS = DIAGRAMS;
   window.RO_PDF = RO_PDF;
