@@ -107,6 +107,12 @@
     ['situation', 'Situations', 'The things you don\'t see every game.'],
     ['ontario', 'Ringette Ontario extras', 'Only at Ringette Ontario sanctioned events, like tournaments and provincials. Your league may set its own rules.']
   ];
+  const intro = document.createElement('div');
+  intro.className = 'rintro';
+  intro.innerHTML = `<strong>A plain-language guide, not the full rulebook.</strong> These ${RC.length} cards cover the basics and some of the trickier situations. They don't cover every rule.
+    The official wording is in Ringette Canada's <a href="${PDF}" target="_blank" rel="noopener">Official Rules &amp; Case Book 2025–2027</a> (24 sections, about 200 pages) and
+    Ringette Ontario's <a href="${window.RO_PDF}" target="_blank" rel="noopener">Competition Playing Rules</a>. If anything here differs, the rulebooks win.`;
+  $('rulesList').appendChild(intro);
   for (const [kind, label, note] of SECTIONS) {
     const sec = document.createElement('div');
     sec.dataset.kind = kind;

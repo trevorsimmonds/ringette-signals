@@ -212,3 +212,6 @@ main { max-width: 900px; margin: 0 auto; padding: 0 16px 40px; }
 .learn .sigchip::before { content: "→ "; }
 @media (min-width: 900px) { .rbody { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 440px) { .tabs .pill { display: none; } .tabs button { font-size: .92rem; } }
+.rintro { margin: 2px 0 4px; padding: 12px 14px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); font-size: .86rem; line-height: 1.45; color: var(--text); }
+.rintro strong { display: block; margin-bottom: 3px; }
+.rdisclaim { margin: 4px 0 0 !important; }
