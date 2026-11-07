@@ -142,6 +142,10 @@ main { max-width: 900px; margin: 0 auto; padding: 0 16px 40px; }
   border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; width: 100%;
 }
 .vinfo p { margin: 6px 0 0; line-height: 1.45; }
+.vinfo h3 { margin: 14px 0 0; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.means { margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); }
+.means h3 { margin: 0; color: var(--accent); }
+.means p { margin-top: 4px; }
 .rules { display: grid; gap: 8px; margin-top: 14px; }
 .rule {
   display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 12px;

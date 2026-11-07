@@ -71,11 +71,11 @@
   $('nPen').textContent = sigs.filter((s) => s.cat === 'penalty').length;
 
   let cat = 'all', query = '';
-  const visible = () => sigs.filter((s) => (cat === 'all' || s.cat === cat) && s.name.toLowerCase().includes(query));
+  const visible = () => sigs.filter((s) => (cat === 'all' || s.cat === cat) && (s.name + ' ' + s.means).toLowerCase().includes(query));
   function filter() {
     let n = 0;
     for (const c of cards) {
-      const show = (cat === 'all' || c.cs.cat === cat) && c.cs.name.toLowerCase().includes(query);
+      const show = (cat === 'all' || c.cs.cat === cat) && (c.cs.name + ' ' + c.cs.means).toLowerCase().includes(query);
       c.el.hidden = !show; if (show) n++;
     }
     $('empty').hidden = n > 0;
@@ -112,6 +112,7 @@
     $('vCat').textContent = cs.cat === 'penalty' ? 'Penalty signal' : 'General signal';
     $('vName').textContent = cs.name;
     revealed = false; applyQuiz();
+    $('vMeans').textContent = cs.means;
     $('vHow').textContent = cs.how;
     $('vRules').innerHTML = ruleLinks(cs);
     const st = $('vStage');
@@ -122,7 +123,7 @@
   function applyQuiz() {
     const hide = quiz && !revealed;
     $('vName').classList.toggle('hidden-name', hide);
-    $('vHow').hidden = hide; $('vRules').hidden = hide;
+    $('vHow').hidden = hide; $('vRules').hidden = hide; $('vMeansWrap').hidden = hide; $('vHowH').hidden = hide;
     $('vReveal').hidden = !hide;
     $('vName').setAttribute('aria-hidden', hide);
   }
@@ -186,6 +187,10 @@
   // deep link: #signal-id opens it
   const hash = decodeURIComponent(location.hash.slice(1));
   if (hash && sigs.some((s) => s.id === hash)) openViewer(hash);
+  window.addEventListener('hashchange', () => {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (h && sigs.some((s) => s.id === h)) { if (viewer.hidden) openViewer(h); else show(list.findIndex((s) => s.id === h), 0); }
+  });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});

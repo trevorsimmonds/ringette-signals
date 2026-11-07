@@ -9,6 +9,8 @@
     [0, up()], [0.06, up()], [0.3, pose], [0.78, pose], [0.97, up()], [1, up()]
   ];
 
+  // Arm pointing straight at the viewer (foreshortened), used for forward reaches.
+  const FWD = (h, hs = 1.5) => ({ u: 86, f: 0, ul: 0.26, fl: 0.26, h, hs });
   const S = [];
   const add = (o) => S.push(o);
 
@@ -32,7 +34,7 @@
 
   const sweepKeys = (other) => {
     const k = [[0, up(other ? other : null)], [0.05, up(other)]];
-    const fwd = { u: 58, f: 6, ul: 0.45, fl: 0.5, h: 'flat', hs: 1.15 };
+    const fwd = FWD('flat', 1.35);
     const side = { u: 92, f: 0, h: 'flat' };
     for (let i = 0; i < 5; i++) {
       const t0 = 0.08 + i * 0.17;
@@ -44,12 +46,12 @@
   };
   add({ id: 'five-second-count', name: 'Five-second count', cat: 'general', dur: 6,
     how: 'One arm at shoulder height sweeps out to the side and back, palm down: one sweep for each second.',
-    rule: { ref: '8.4', title: 'Blue Line (five-second rule)', page: 34 },
+    rule: null,
     keys: sweepKeys(null) });
 
   add({ id: 'delayed-violation-five', name: 'Delayed violation with five-second count', cat: 'general', dur: 6,
     how: 'One arm gives the delayed violation signal while the other arm gives the five-second count.',
-    rule: { ref: '8.4', title: 'Blue Line (five-second rule)', page: 34 },
+    rule: null,
     keys: sweepKeys({ u: 90, f: 90, h: 'palm' }) });
 
   add({ id: 'goal', name: 'Goal', cat: 'general', dur: 3,
@@ -69,23 +71,37 @@
       [0.42, up({ ax: 114, ay: 134, h: 'fist' }, { ax: 126, ay: 134, h: 'fist' })],
       [0.8, up({ ax: 114, ay: 134, h: 'fist' }, { ax: 126, ay: 134, h: 'fist' })], [0.97, up()], [1, up()]] });
 
-  add({ id: 'timeout', name: 'Timeout', cat: 'general', dur: 3,
-    how: 'Hands form a horizontal "T" in front of the chest.',
+  // Timeout "T": flat hand across the top, the other hand upright under it, fingertips touching.
+  const TEE = up({ ax: 108, ay: 118, ul: 0.8, fl: 0.55, bend: 'down', ha: -90, h: 'flat', hs: 1.3 },
+    { ax: 120, ay: 153, ul: 0.85, fl: 0.55, bend: 'down', ha: 180, h: 'flat', hs: 1.3 });
+  // Timeout is a horizontal T, matching Ringette Canada's demo clip: the right-hand side (viewer's right)
+  // hand stands upright at upper-chest height; the other hand lies flat, fingertips into its palm.
+  // The official then extends that arm out to the side.
+  const SIDE_T = up({ ax: 108, ay: 128, ul: 0.8, fl: 0.55, bend: 'down', ha: -90, h: 'flat', hs: 1.3 },
+    { ax: 130, ay: 142, ul: 0.85, fl: 0.55, bend: 'down', ha: 180, h: 'flat', hs: 1.3 });
+  const TO_SIDE = up(null, { u: 90, f: 0, h: 'flat' });
+  add({ id: 'timeout', name: 'Timeout', cat: 'general', dur: 4,
+    how: 'Hands form a horizontal "T" in front of the chest: one hand upright, the other flat with its fingertips touching the middle of the upright palm. In Ringette Canada\'s demonstration the official then extends that arm straight out to the side.',
     rule: { ref: '6.5', title: 'Timeouts', page: 25 }, front: 'LR',
-    top: 'L', keys: hold(up({ u: -94, f: 4, h: 'flat' }, { u: -15, f: -165, fl: 0.85, h: 'flat' })) });
+    keys: [[0, up()], [0.05, up()], [0.22, SIDE_T], [0.52, SIDE_T], [0.64, TO_SIDE], [0.86, TO_SIDE], [0.98, up()], [1, up()]] });
 
   add({ id: 'two-blue', name: 'Two blue line pass', cat: 'general', dur: 3,
     how: 'Arm extended up and out from shoulder height at about 22.5°, index and middle fingers extended, while saying "two".',
     rule: { ref: '8.5', title: 'Two Blue Line Pass', page: 37 },
     keys: hold(up(null, { u: 112, f: 0, h: 'two', hs: 1.1 })).map(([t, p]) => [t, t >= 0.3 && t < 0.97 ? { ...p, cap: 'TWO' } : p]) });
 
-  add({ id: 'wash-out', name: 'Wash out', cat: 'general', dur: 3.2,
+  const WSIDE = { u: 90, f: 0, h: 'flat' }, WOUT = { u: 88, f: 0, ul: 0.2, fl: 0.2, h: 'flat', hs: 1.3 },
+    WIN = { u: -84, f: 0, ul: 0.2, fl: 0.2, h: 'flat', hs: 1.3 }, WX = { u: -80, f: 0, ul: 0.82, fl: 0.82, h: 'flat' };
+  const wk = [[0, up()], [0.05, up()], [0.18, up(WSIDE, WSIDE)]];
+  for (const t0 of [0.24, 0.52]) {
+    wk.push([t0, up(WOUT, WOUT)], [t0 + 0.02, up(WIN, WIN)], [t0 + 0.09, up(WX, WX)],
+      [t0 + 0.16, up(WIN, WIN)], [t0 + 0.18, up(WOUT, WOUT)], [t0 + 0.25, up(WSIDE, WSIDE)]);
+  }
+  wk.push([0.86, up(WSIDE, WSIDE)], [0.98, up()], [1, up()]);
+  add({ id: 'wash-out', name: 'Wash out', cat: 'general', dur: 3.6,
     how: 'Both arms swing sideways in opposite directions across the front of the body at shoulder height, palms down.',
-    rule: null, front: 'LR',
-    keys: [[0, up()], [0.06, up()],
-      [0.22, up({ ax: 136, ay: 118, h: 'flat' }, { ax: 104, ay: 120, h: 'flat' })], [0.4, up({ u: 92, f: 0, h: 'flat' }, { u: 92, f: 0, h: 'flat' })],
-      [0.56, up({ ax: 136, ay: 118, h: 'flat' }, { ax: 104, ay: 120, h: 'flat' })], [0.74, up({ u: 92, f: 0, h: 'flat' }, { u: 92, f: 0, h: 'flat' })],
-      [0.84, up({ u: 92, f: 0, h: 'flat' }, { u: 92, f: 0, h: 'flat' })], [0.98, up()], [1, up()]] });
+    rule: null, front: 'LR', top: 'L',
+    keys: wk });
 
   const circ = [];
   for (let i = 0; i <= 8; i++) circ.push([0.3 + i * 0.06, up(null, { u: 90, f: 90, h: 'point', w: Math.sin(i * Math.PI / 2) * 24 })]);
@@ -107,21 +123,21 @@
   add({ id: 'toe-kick', name: 'Toe kick', cat: 'general', dur: 3,
     how: 'The toe of one skate is raised and the hand without the whistle reaches toward it, thumb tucked in.',
     rule: { ref: '1.11', title: 'Kicking the Ring', page: 3 },
-    keys: hold(up(null, { ax: 166, ay: 214, ul: 1.1, fl: 1.1, h: 'flat' }, { body: { toe: 26, c: 0.25 } })) });
+    keys: hold(up(null, { ax: 170, ay: 226, ul: 1.15, fl: 1.15, h: 'flat' }, { body: { toe: 34, c: 0.35 } })) });
 
   add({ id: 'five-second-expiry', name: 'Five-second expiration', cat: 'general', dur: 3,
     how: 'Hand without the whistle held out at shoulder height, palm out, fingers and thumb spread.',
-    rule: { ref: '8.4', title: 'Blue Line (five-second rule)', page: 34 },
+    rule: null,
     keys: hold(up(null, { u: 88, f: 70, h: 'spread', hs: 1.1 })) });
 
   add({ id: 'touch', name: 'Touch', cat: 'general', dur: 3,
     how: 'Both hands out in front of the forehead; the fingers of the non-whistle hand brush over the other hand while saying "touch".',
     rule: null, front: 'LR',
-    keys: [[0, up()], [0.06, up()], [0.26, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 130, ay: 70, h: 'flat' })],
+    keys: [[0, up()], [0.05, up()], [0.14, up({ ax: 110, ay: 132, h: 'flat' }, { ax: 130, ay: 130, h: 'flat' })], [0.26, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 130, ay: 70, h: 'flat' })],
       [0.38, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 112, ay: 68, h: 'flat' }, { cap: 'TOUCH' })],
       [0.5, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 130, ay: 70, h: 'flat' }, { cap: 'TOUCH' })],
       [0.62, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 112, ay: 68, h: 'flat' }, { cap: 'TOUCH' })],
-      [0.8, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 130, ay: 70, h: 'flat' })], [0.97, up()], [1, up()]] });
+      [0.8, up({ ax: 112, ay: 74, h: 'flat' }, { ax: 130, ay: 70, h: 'flat' })], [0.88, up({ ax: 110, ay: 132, h: 'flat' }, { ax: 130, ay: 130, h: 'flat' })], [0.98, up()], [1, up()]] });
 
   add({ id: 'direction-of-play', name: 'Direction of play', cat: 'general', dur: 3,
     how: 'Arm fully extended at shoulder height toward where the ring will go, fingers forward and thumb tucked in.',
@@ -147,7 +163,7 @@
   P({ id: 'body-contact', name: 'Body contact', dur: 3,
     how: 'Clenched fist, arm extended straight out to the side at shoulder height.',
     rule: { ref: '14.2', title: 'Body Contact', page: 108, approx: true },
-    keys: [[0, up()], [0.06, up()], [0.24, up(null, { u: 90, f: 150, h: 'fist' })], [0.4, up(null, { u: 90, f: 0, h: 'fist' })],
+    keys: [[0, up()], [0.06, up()], [0.24, up(null, { u: 90, f: 0, ul: 0.6, fl: 0.45, h: 'fist' })], [0.36, up(null, { u: 90, f: 0, h: 'fist' })],
       [0.8, up(null, { u: 90, f: 0, h: 'fist' })], [0.97, up()], [1, up()]] });
 
   const ch = [];
@@ -187,7 +203,8 @@
   P({ id: 'high-sticking', name: 'High sticking', dur: 3,
     how: 'Both fists raised as if holding a stick high: one at forehead height, the other beside the first elbow.',
     rule: { ref: '14.7', title: 'High Sticking', page: 108, approx: true }, front: 'LR',
-    keys: [[0, up()], [0.06, up()], [0.28, hs1], [0.42, hs2], [0.56, hs1], [0.8, hs1], [0.97, up()], [1, up()]] });
+    keys: [[0, up()], [0.06, up()], [0.16, up({ ax: 140, ay: 140, h: 'fist', bend: 'down' }, { ax: 134, ay: 120, h: 'fist' })], [0.28, hs1], [0.42, hs2], [0.56, hs1], [0.8, hs1],
+      [0.88, up({ ax: 140, ay: 140, h: 'fist', bend: 'down' }, { ax: 134, ay: 120, h: 'fist' })], [0.98, up()], [1, up()]] });
 
   P({ id: 'holding', name: 'Holding', dur: 3,
     how: 'One fist in front of the centre of the chest, gripped at the wrist by the other hand.',
@@ -206,9 +223,9 @@
   P({ id: 'illegal-substitution', name: 'Illegal substitution', dur: 3,
     how: 'The palm of one hand pats the top of the helmet.',
     rule: { ref: '14.10', title: 'Illegal Substitution', page: 108, approx: true }, front: 'R',
-    keys: [[0, up()], [0.06, up()], [0.26, up(null, { ax: 124, ay: 48, h: 'flat' })], [0.36, up(null, { ax: 124, ay: 56, h: 'flat' })],
+    keys: [[0, up()], [0.05, up()], [0.16, up(null, { u: 150, f: 40, h: 'flat' })], [0.26, up(null, { ax: 124, ay: 48, h: 'flat' })], [0.36, up(null, { ax: 124, ay: 56, h: 'flat' })],
       [0.46, up(null, { ax: 124, ay: 46, h: 'flat' })], [0.56, up(null, { ax: 124, ay: 56, h: 'flat' })],
-      [0.8, up(null, { ax: 124, ay: 56, h: 'flat' })], [0.97, up()], [1, up()]] });
+      [0.8, up(null, { ax: 124, ay: 56, h: 'flat' })], [0.88, up(null, { u: 150, f: 40, h: 'flat' })], [0.98, up()], [1, up()]] });
 
   P({ id: 'interference', name: 'Interference', dur: 3,
     how: 'Arms crossed over the chest, hands open with palms facing the sides, hands level with the shoulders.',
@@ -219,12 +236,12 @@
   P({ id: 'slashing', name: 'Slashing', dur: 3,
     how: 'One arm held across the chest; the other hand chops down onto that forearm.',
     rule: { ref: '14.12', title: 'Slashing', page: 108, approx: true }, front: 'LR',
-    keys: [[0, up()], [0.06, up()], [0.24, up(slA, { ax: 128, ay: 98, h: 'flat' })], [0.36, up(slA, { ax: 122, ay: 128, h: 'flat' })],
-      [0.48, up(slA, { ax: 128, ay: 98, h: 'flat' })], [0.6, up(slA, { ax: 122, ay: 128, h: 'flat' })],
+    keys: [[0, up()], [0.06, up()], [0.24, up(slA, { ax: 150, ay: 96, h: 'flat' })], [0.36, up(slA, { ax: 122, ay: 128, h: 'flat' })],
+      [0.48, up(slA, { ax: 150, ay: 96, h: 'flat' })], [0.6, up(slA, { ax: 122, ay: 128, h: 'flat' })],
       [0.8, up(slA, { ax: 122, ay: 128, h: 'flat' })], [0.97, up()], [1, up()]] });
 
   const trDown = { body: { c: 0.7 } };
-  const trUp = { u: 75, f: 50, h: 'flat' }, trHit = { ax: 152, ay: 232, ul: 1.15, fl: 1.15, h: 'flat', bend: 'out' };
+  const trUp = { ax: 158, ay: 182, h: 'flat' }, trHit = { ax: 152, ay: 232, ul: 1.15, fl: 1.15, h: 'flat', bend: 'out' };
   P({ id: 'tripping', name: 'Tripping', dur: 3.2,
     how: 'Knees slightly bent and leaning forward, the official strikes the leg just below the knee with the edge of the hand, on the same side.',
     rule: { ref: '14.13', title: 'Tripping', page: 108, approx: true },
@@ -241,23 +258,66 @@
     rule: null, front: 'LR',
     keys: hold(up({ ax: 128, ay: 34, h: 'fist' }, { ax: 112, ay: 34, h: 'fist' })) });
 
-  const T = up({ ax: 132, ay: 112, h: 'flat', bend: 'down' }, { ax: 120, ay: 120, h: 'flat', bend: 'down' });
+  const T = TEE;
   P({ id: 'major', name: 'Major penalty', dur: 4,
-    how: 'Both hands form a "T" in front of the chest, followed by the signal for the infraction (or rough play) the major was given for.',
-    rule: null, front: 'LR',
-    keys: [[0, up()], [0.05, up()], [0.2, T], [0.44, T], [0.58, up(null, { u: 24, f: 8, ul: 0.42, fl: 0.42, h: 'fist', hs: 1.55 })],
-      [0.84, up(null, { u: 24, f: 8, ul: 0.42, fl: 0.42, h: 'fist', hs: 1.55 })], [0.97, up()], [1, up()]] });
+    how: 'Both hands form an upright "T" in front of the chest, followed by the signal for the infraction (or rough play) the major was given for.',
+    rule: null, front: 'LR', top: 'L',
+    keys: [[0, up()], [0.05, up()], [0.2, T], [0.44, T], [0.58, up(null, FWD('fist', 1.7))],
+      [0.84, up(null, FWD('fist', 1.7))], [0.97, up()], [1, up()]] });
 
   P({ id: 'rough-play', name: 'Rough play', dur: 3,
     how: 'One fist clenched, with the arm extended straight out in front of the body at shoulder height.',
     rule: null, front: 'R',
-    keys: [[0, up()], [0.06, up()], [0.24, up(null, { ax: 140, ay: 136, h: 'fist' })], [0.38, up(null, { u: 24, f: 8, ul: 0.42, fl: 0.42, h: 'fist', hs: 1.55 })],
-      [0.8, up(null, { u: 24, f: 8, ul: 0.42, fl: 0.42, h: 'fist', hs: 1.55 })], [0.97, up()], [1, up()]] });
+    keys: [[0, up()], [0.06, up()], [0.24, up(null, { ax: 140, ay: 136, h: 'fist' })], [0.38, up(null, FWD('fist', 1.7))],
+      [0.8, up(null, FWD('fist', 1.7))], [0.97, up()], [1, up()]] });
 
   P({ id: 'misconduct-match', name: 'Misconduct / match penalty', dur: 3,
     how: 'Both hands placed on the hips.',
     rule: null, front: 'LR',
     keys: hold(up({ ax: 97, ay: 172, h: 'flat' }, { ax: 143, ay: 172, h: 'flat' })) });
+
+
+  // What each signal means, in plain language.
+  const MEANS = {
+    'all-clear': 'Before a free pass, the official checks both sides to make sure both teams are set. Play can start.',
+    'delayed-penalty': 'The team without the ring has committed a penalty. Play carries on until that team gets control of the ring, then the whistle goes and the penalty is given.',
+    'delayed-violation': 'The team without the ring has broken a rule (for example, too many skaters in the zone or a crease violation). Play carries on; if that team gets the ring, play stops.',
+    'five-second-count': 'After the whistle on a free pass or goaltender ring, the player has five seconds to pass the ring out of the circle or crease. The official counts the seconds with the arm.',
+    'delayed-violation-five': 'The team without the ring broke a rule and the five-second count is also running, so the official shows both at once.',
+    'goal': 'The ring fully crossed the goal line and the goal counts.',
+    'goaltender-ring': 'After a stoppage in a team\'s defensive zone, the ring goes to their goaltender in the crease instead of a free pass.',
+    'bottom-third': 'The ring carrier\'s hand slid down onto the bottom third of the stick while an opponent was close enough to check. That\'s a violation, and the ring goes to the other team.',
+    'timeout': 'A team asked for a timeout during a stoppage and the official approved it.',
+    'two-blue': 'The ring is about to be (or was) passed over two blue lines without being touched, which isn\'t allowed. The back official warns it\'s coming; the lead official signals when the ring crosses the second blue line.',
+    'wash-out': 'The goal does not count. It\'s also used on a two-blue-line pass when the team that\'s allowed to play the ring misses it, so play carries on.',
+    'shot-clock-reset': 'Tells the shot clock operator to reset the shot clock because it should have been reset and wasn\'t.',
+    'line-violation': 'Play stopped because a player crossed a line they weren\'t allowed to: a blue line, the free play line, the crease, or a free pass circle.',
+    'too-many-skaters': 'Play stopped because a team had too many skaters inside the restricted area at one end (only three skaters per team are allowed in there). The fingers show how many there were.',
+    'toe-kick': 'A player kicked the ring forward with the toe of the skate. That\'s a violation, and the ring goes to the other team.',
+    'five-second-expiry': 'The five seconds ran out before the ring was passed out of the circle or crease, so the ring goes to the other team.',
+    'touch': 'The ring just grazed a player or stick. It tells the partner official, who might not have seen it, so a two-blue-line pass or blue line violation isn\'t called by mistake.',
+    'direction-of-play': 'After a stoppage, it shows which team gets the ring: the arm points the way that team will attack.',
+    'hold': 'Don\'t start play yet. Used before play begins if there\'s any reason to wait.',
+    'boarding': 'A player used the body to force an opponent into the boards. 2-minute minor.',
+    'body-contact': 'A player checked an opponent with the body in a forceful way. Ringette has no body checking. 2-minute minor.',
+    'charging': 'The ring carrier skated straight into an opponent who was already in a legal defending position. 2-minute minor.',
+    'cross-checking': 'A player checked an opponent with the stick held in both hands in front of the body. 2-minute minor.',
+    'delay-of-game': 'A player held up the game, for example by holding or shooting the ring out of play, deliberately going into the crease, playing with a broken stick, or stalling. 2-minute minor.',
+    'elbowing': 'A player hit an opponent with the elbow. 2-minute minor.',
+    'high-sticking': 'A player raised the playing end of the stick above shoulder height near another player, even by accident. 2-minute minor.',
+    'holding': 'A player held an opponent with the hand, or pinned the ring carrier\'s stick so they couldn\'t pass or shoot. 2-minute minor.',
+    'hooking': 'A player used the stick to hook an opponent\'s body, arms, legs or stick to slow them down. 2-minute minor.',
+    'illegal-substitution': 'A team had too many players on the ice, usually from a bad line change. 2-minute minor.',
+    'interference': 'A player blocked an opponent who didn\'t have the ring, used the arm to fend off a checker, screened the goalie by moving with her, or checked a stick too early. 2-minute minor.',
+    'slashing': 'A player hit an opponent\'s legs, hands, arms or body with the stick, or swung it at them forcefully. 2-minute minor.',
+    'tripping': 'A player used the stick, foot, leg, arm or body to make an opponent trip or fall. 2-minute minor.',
+    'unsportsmanlike': 'Disrespectful behaviour, such as arguing with officials, taunting or bad language. The penalty is served in full, so a goal doesn\'t end it.',
+    'penalty-shot': 'A foul took away a clear chance to score, so the fouled player gets a free shot alone against the goaltender.',
+    'major': 'A more serious penalty: 4 minutes, served in full. Given when a minor is reckless or aggressive, or for contact to the head or from behind. The official then shows the infraction.',
+    'rough-play': 'Rough or aggressive physical play, such as shoving or punching an opponent. Given as a major penalty.',
+    'misconduct-match': 'The player is put out of the game. A match penalty is for a deliberate attempt to injure and brings a further suspension.'
+  };
+  S.forEach((s) => { s.means = MEANS[s.id] || ''; });
 
   window.SIGNALS = S;
 })();

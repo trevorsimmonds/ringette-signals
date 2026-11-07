@@ -142,7 +142,8 @@
       const arm = (side) => {
         const a = p[side] || REST;
         const s = solveArm(side, a, dy);
-        return { ...s, h: a.h || 'fist', hs: a.hs ?? 1, w: a.w ?? 0 };
+        const w = a.ha !== undefined ? a.ha - (s.u + s.f) : (a.w ?? 0);
+        return { ...s, h: a.h || 'fist', hs: a.hs ?? 1, w: norm(w) };
       };
       return { t, L: arm('L'), R: arm('R'), body, cap: p.cap === undefined ? null : p.cap, prop: p.prop ?? null };
     });
@@ -163,7 +164,7 @@
     const arm = (s) => ({
       u: lerp(a[s].u, near(a[s].u, b[s].u), p), f: lerp(a[s].f, near(a[s].f, b[s].f), p),
       ul: lerp(a[s].ul, b[s].ul, p), fl: lerp(a[s].fl, b[s].fl, p), hs: lerp(a[s].hs, b[s].hs, p),
-      w: lerp(a[s].w, b[s].w, p), h: p < 0.35 ? a[s].h : b[s].h
+      w: lerp(a[s].w, near(a[s].w, b[s].w), p), h: p < 0.35 ? a[s].h : b[s].h
     });
     const body = {}; for (const key of ['c', 'toe', 'bob']) body[key] = lerp(a.body[key] || 0, b.body[key] || 0, p);
     return { L: arm('L'), R: arm('R'), body, cap: a.cap, prop: a.prop };
@@ -189,7 +190,7 @@
       m.far.setAttribute('height', Math.max(8, fLen + 4));
       m.cuff.setAttribute('y', fLen - 6);
       m.hp.setAttribute('transform', `translate(0 ${fLen}) rotate(${sg * a.w}) scale(${a.hs})`);
-      if (m.shape !== a.h) { m.hand.innerHTML = HANDS[a.h] || HANDS.fist; m.shape = a.h; }
+      if (m.shape !== a.h) { m.hand.innerHTML = `<g stroke="#fff" stroke-width="1.4" paint-order="stroke" stroke-linejoin="round">${HANDS[a.h] || HANDS.fist}</g>`; m.shape = a.h; }
     }
     // ponytail: springs against arm motion
     const u = pose.L.u + pose.R.u;
